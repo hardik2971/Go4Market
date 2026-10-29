@@ -1,0 +1,6 @@
+# Copy to key.properties (never commit it) to sign release builds with the upload key.
+# storeFile is relative to android/app/.
+storePassword=CHANGE_ME
+keyPassword=CHANGE_ME
+keyAlias=upload
+storeFile=upload-keystore.jks

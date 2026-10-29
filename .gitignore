@@ -1,0 +1,14 @@
+secret/
+**/node_modules/
+functions/lib/
+functions/.env*
+**/build/
+**/.dart_tool/
+**/.flutter-plugins*
+*.keystore
+*.jks
+key.properties
+.firebase/
+*.log
+tools/qa/out/
+tools/qa/node_modules/

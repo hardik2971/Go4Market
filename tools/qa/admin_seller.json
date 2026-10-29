@@ -1,0 +1,2 @@
+[{"goto":"https://go4market-admin.web.app/login"},{"login":{"email":"admin@go4market.com"}},
+ {"goto":"https://go4market-admin.web.app/sellers","ms":9000},{"shot":"v_sellers"}]

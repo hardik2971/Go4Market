@@ -1,0 +1,197 @@
+rules_version = '2';
+
+// Go4Market Firestore rules — see docs/ARCHITECTURE.md "Security model".
+// Money, stock, order state, wallet, stats and counters are written only by Cloud Functions (Admin SDK bypasses rules).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ───────── helpers
+    function signedIn() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+    function role() { return signedIn() ? request.auth.token.get('role', 'customer') : 'guest'; }
+    function isAdmin() { return role() == 'admin'; }
+    function isSeller() { return role() == 'seller'; }
+    function isDelivery() { return role() == 'delivery'; }
+    function isOwner(id) { return signedIn() && uid() == id; }
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+    function onlyChanges(keys) { return changed().hasOnly(keys); }
+    function noneOf(keys) { return !changed().hasAny(keys); }
+    function createdWithout(keys) { return !request.resource.data.keys().hasAny(keys); }
+    // Approved riders who are online may browse the unassigned-order pool.
+    function poolRider() {
+      let p = get(/databases/$(database)/documents/deliveryPartners/$(uid())).data;
+      return p.status == 'approved' && p.online == true;
+    }
+    function settings() { return get(/databases/$(database)/documents/settings/platform).data; }
+
+    // Admin may manage every top-level collection except the function-only ones.
+    match /{col}/{docId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin() && !(col in ['users', 'stats', 'walletTransactions', 'counters', '_events', 'walletTopups', 'coPurchase', 'orders', 'returns', 'withdrawals', 'fundTransfers', 'cashCollections', 'cashSettlements']);
+    }
+
+    // ───────── users
+    match /users/{userId} {
+      function protectedUserKeys() {
+        return ['role', 'walletBalance', 'membership', 'status', 'referralCode', 'referralRewarded', 'referrerId', 'referralCount', 'cartReminderAt'];
+      }
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && createdWithout(protectedUserKeys());
+      allow update: if isOwner(userId) && noneOf(protectedUserKeys())
+        && (!('referredBy' in changed()) || resource.data.get('referredBy', null) == null);
+      allow update: if isAdmin() && noneOf(['walletBalance']);
+      allow delete: if false;
+
+      match /addresses/{id} { allow read, write: if isOwner(userId); allow read: if isAdmin(); }
+      match /cart/{id} {
+        allow read, delete: if isOwner(userId) || isAdmin();
+        allow create, update: if isOwner(userId)
+          && request.resource.data.qty is int && request.resource.data.qty > 0 && request.resource.data.qty <= 99
+          && request.resource.data.productId is string;
+      }
+      match /wishlist/{id} { allow read, write: if isOwner(userId); allow read: if isAdmin(); }
+      match /notifications/{id} {
+        allow read, delete: if isOwner(userId) || isAdmin();
+        allow update: if isOwner(userId) && onlyChanges(['read', 'readAt']);
+        allow create: if isAdmin();
+      }
+    }
+
+    // Abandoned carts: sellers see cart lines of their own products; admins see all.
+    match /{path=**}/cart/{itemId} {
+      allow read: if isAdmin() || (isSeller() && resource.data.sellerId == uid());
+    }
+    match /{path=**}/wishlist/{itemId} {
+      allow read: if isAdmin();
+    }
+
+    // ───────── sellers / delivery partners
+    match /sellers/{sellerId} {
+      allow read: if resource.data.status == 'approved' || isOwner(sellerId) || isAdmin();
+      allow update: if isOwner(sellerId) && noneOf(['status', 'commissionPct', 'balance', 'totalSales', 'productCount', 'rating', 'ratingCount', 'ratingSum', 'pendingWithdrawal', 'totalPaidOut', 'orderCount', 'slug', 'reviewNote', 'reviewedAt']);
+    }
+    match /deliveryPartners/{partnerId} {
+      // Sellers see only their own fleet (ownerType 'seller', sellerId == uid).
+      allow read: if isOwner(partnerId) || isAdmin() || (isSeller() && resource.data.sellerId == uid());
+      allow update: if isOwner(partnerId) && onlyChanges(['online', 'lat', 'lng', 'heading', 'locationUpdatedAt', 'updatedAt'])
+        && (request.resource.data.online == false || resource.data.status == 'approved');
+    }
+
+    // ───────── public catalog & content (admin writes via the generic match)
+    match /modules/{id} { allow read: if true; }
+    match /categories/{id} { allow read: if true; }
+    match /brands/{id} { allow read: if true; }
+    match /sliders/{id} { allow read: if true; }
+    match /offers/{id} { allow read: if true; }
+    match /featuredSections/{id} { allow read: if true; }
+    match /faqs/{id} { allow read: if true; }
+    match /pages/{id} { allow read: if true; }
+    match /popups/{id} { allow read: if true; }
+    match /membershipPlans/{id} { allow read: if true; }
+    match /cities/{id} { allow read: if true; }
+    match /languages/{id} { allow read: if true; }
+    match /translations/{id} { allow read: if true; }
+    match /blogCategories/{id} { allow read: if true; }
+    match /blogs/{id} { allow read: if resource.data.published == true || isAdmin(); }
+    // settings/communication and settings/notifications hold operational config: admin-only.
+    match /settings/{id} { allow read: if !(id in ['communication', 'notifications']) || isAdmin(); }
+    match /taxes/{id} { allow read: if true; }
+    match /countries/{id} { allow read: if true; }
+    // Product custom-field definitions: global (sellerId == null, admin) or a seller's own.
+    match /customFields/{id} {
+      allow read: if true;
+      allow create: if isSeller() && request.resource.data.sellerId == uid();
+      allow update: if isSeller() && resource.data.sellerId == uid() && request.resource.data.sellerId == uid();
+      allow delete: if isSeller() && resource.data.sellerId == uid();
+    }
+
+    // Seller-defined attributes (global ones have sellerId == null and are admin-only).
+    match /attributes/{id} {
+      allow read: if true;
+      allow create: if isSeller() && request.resource.data.sellerId == uid();
+      allow update: if isSeller() && resource.data.sellerId == uid() && request.resource.data.sellerId == uid();
+      allow delete: if isSeller() && resource.data.sellerId == uid();
+    }
+    match /attributeAlerts/{id} {
+      allow read: if isSeller() && resource.data.sellerId == uid();
+      allow update: if isSeller() && resource.data.sellerId == uid() && onlyChanges(['resolved', 'resolvedAt']);
+    }
+
+    // ───────── products
+    match /products/{productId} {
+      function autoApprove() { return settings().get('autoApproveProducts', false) == true; }
+      function sellerStatusOk(s) { return s in ['pending', 'draft'] || (s == 'active' && autoApprove()); }
+      allow read: if resource.data.status == 'active' || isAdmin() || (isSeller() && resource.data.sellerId == uid());
+      allow create: if isSeller() && request.resource.data.sellerId == uid()
+        && sellerStatusOk(request.resource.data.status)
+        && request.resource.data.get('soldCount', 0) == 0 && request.resource.data.get('ratingCount', 0) == 0
+        && request.resource.data.get('featured', false) == false
+        && request.resource.data.price is number && request.resource.data.price >= 0;
+      allow update: if isSeller() && resource.data.sellerId == uid()
+        && request.resource.data.sellerId == uid()
+        && noneOf(['rating', 'ratingCount', 'ratingSum', 'soldCount', 'viewCount', 'featured', 'hiddenBySuspension'])
+        && (request.resource.data.status == resource.data.status || sellerStatusOk(request.resource.data.status));
+      allow delete: if isSeller() && resource.data.sellerId == uid();
+
+      match /reviews/{reviewId} {
+        allow read: if true;
+        allow delete: if isAdmin();
+      }
+    }
+    match /{path=**}/reviews/{reviewId} { allow read: if true; }
+
+    // ───────── coupons (platform coupons by admin; seller coupons by their seller)
+    match /coupons/{code} {
+      allow read: if resource.data.active == true || isAdmin() || (isSeller() && resource.data.sellerId == uid());
+      allow create: if isSeller() && request.resource.data.sellerId == uid() && request.resource.data.get('usedCount', 0) == 0;
+      allow update: if isSeller() && resource.data.sellerId == uid() && request.resource.data.sellerId == uid() && noneOf(['usedCount']);
+      allow delete: if isSeller() && resource.data.sellerId == uid();
+      match /usages/{u} { allow read: if isOwner(u) || isAdmin(); }
+    }
+
+    // ───────── orders & money (read-only for clients)
+    match /orders/{orderId} {
+      allow read: if signedIn() && (
+        resource.data.userId == uid()
+        || uid() in resource.data.sellerIds
+        || resource.data.deliveryPartnerId == uid()
+        || isAdmin()
+        // Delivery pool: unassigned home orders ready for pickup.
+        || (isDelivery() && resource.data.deliveryPartnerId == null && resource.data.deliveryType == 'home'
+            && resource.data.status in ['confirmed', 'packed'] && poolRider()));
+    }
+    match /returns/{id} {
+      allow read: if signedIn() && (resource.data.userId == uid() || uid() in resource.data.sellerIds || isAdmin());
+    }
+    match /walletTransactions/{id} { allow read: if signedIn() && (resource.data.userId == uid() || isAdmin()); }
+    match /walletTopups/{id} { allow read: if signedIn() && (resource.data.userId == uid() || isAdmin()); }
+    match /withdrawals/{id} { allow read: if signedIn() && (resource.data.userId == uid() || isAdmin()); }
+    match /fundTransfers/{id} { allow read: if signedIn() && (resource.data.toUserId == uid() || isAdmin()); }
+    match /cashCollections/{id} { allow read: if signedIn() && (resource.data.deliveryPartnerId == uid() || isAdmin()); }
+    match /cashSettlements/{id} { allow read: if signedIn() && (resource.data.deliveryPartnerId == uid() || isAdmin()); }
+
+    // ───────── customer-created records
+    match /productRequests/{id} {
+      allow read: if signedIn() && (resource.data.userId == uid() || isAdmin() || isSeller());
+      allow create: if signedIn() && request.resource.data.userId == uid() && request.resource.data.status == 'open'
+        && request.resource.data.name is string && request.resource.data.name.size() <= 200;
+    }
+    match /subscriptions/{id} {
+      allow read: if signedIn() && (resource.data.userId == uid() || isAdmin());
+      allow create: if signedIn() && request.resource.data.userId == uid()
+        && request.resource.data.status in ['active', 'paused']
+        && request.resource.data.frequency in ['daily', 'weekly', 'monthly']
+        && request.resource.data.qty is int && request.resource.data.qty > 0 && request.resource.data.qty <= 50
+        && createdWithout(['lastOrderId', 'runCount', 'lastRunAt', 'lastError']);
+      allow update: if signedIn() && resource.data.userId == uid() && request.resource.data.userId == uid()
+        && request.resource.data.status in ['active', 'paused', 'cancelled']
+        && noneOf(['lastOrderId', 'runCount', 'lastRunAt', 'lastError']);
+      allow delete: if signedIn() && resource.data.userId == uid();
+    }
+
+    // ───────── admin-only areas (generic admin match above covers these)
+    match /staff/{staffId} { allow read: if isOwner(staffId); }
+    match /stats/{id} { allow read: if isAdmin(); }
+    match /counters/{id} { allow read: if isAdmin(); }
+  }
+}

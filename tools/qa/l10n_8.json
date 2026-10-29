@@ -1,0 +1,1 @@
+[{"goto":"http://localhost:8081/login","ms":7000},{"login":{"email":"admin@go4market.com"}},{"wait":3000},{"click":[1250,31],"ms":1200},{"shot":"l10n_menu_hi"},{"click":[1240,84],"ms":4000},{"shot":"l10n_dash_en_final"}]

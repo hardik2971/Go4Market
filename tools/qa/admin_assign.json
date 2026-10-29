@@ -1,0 +1,3 @@
+[{"goto":"https://go4market-admin.web.app/login"},{"login":{"email":"admin@go4market.com"}},
+ {"goto":"https://go4market-admin.web.app/orders","ms":7000},{"shot":"a_orders"},
+ {"click":[407,509],"ms":5000},{"shot":"a_order"}]

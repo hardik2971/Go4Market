@@ -1,0 +1,95 @@
+rules_version = '2';
+
+// Go4Market Storage rules. Catalog/CMS images are public; uploads are scoped by folder and role,
+// limited to images (or PDFs for documents) and capped in size.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function role() { return signedIn() ? request.auth.token.get('role', 'customer') : 'guest'; }
+    function isAdmin() { return role() == 'admin'; }
+    function isOwner(id) { return signedIn() && request.auth.uid == id; }
+    function image(maxMb) {
+      return request.resource.size < maxMb * 1024 * 1024
+        && request.resource.contentType.matches('image/(webp|png|jpeg|jpg|gif|avif|svg\\+xml)');
+    }
+    function imageOrPdf(maxMb) {
+      return request.resource.size < maxMb * 1024 * 1024
+        && (request.resource.contentType.matches('image/(webp|png|jpeg|jpg)') || request.resource.contentType == 'application/pdf');
+    }
+    function deleting() { return request.resource == null; }
+
+    // Seeded/admin catalog & CMS imagery (categories, brands, sliders, offers, blogs, popups…)
+    match /catalog/{path=**} {
+      allow read: if true;
+      allow write: if isAdmin() && (deleting() || image(10));
+    }
+    match /cms/{path=**} {
+      allow read: if true;
+      allow write: if isAdmin() && (deleting() || image(10));
+    }
+    // Product images: products/{sellerId}/...
+    match /products/{sellerId}/{path=**} {
+      allow read: if true;
+      allow write: if (isAdmin() || (role() == 'seller' && isOwner(sellerId))) && (deleting() || image(5));
+    }
+    // Store logo/banner: sellers/{uid}/...
+    match /sellers/{uid}/{path=**} {
+      allow read: if true;
+      allow write: if (isAdmin() || isOwner(uid)) && (deleting() || image(5));
+    }
+    // Avatars: users/{uid}/...
+    match /users/{uid}/{path=**} {
+      allow read: if true;
+      allow write: if isOwner(uid) && (deleting() || image(3));
+    }
+    // Review photos: reviews/{uid}/...
+    match /reviews/{uid}/{path=**} {
+      allow read: if true;
+      allow write: if isOwner(uid) && (deleting() || image(5));
+    }
+    // Return evidence: returns/{uid}/... (private)
+    match /returns/{uid}/{path=**} {
+      allow read: if isOwner(uid) || isAdmin() || role() == 'seller';
+      allow write: if isOwner(uid) && (deleting() || image(5));
+    }
+    // Delivery partner KYC documents: delivery/{uid}/... (private)
+    match /delivery/{uid}/{path=**} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if isOwner(uid) && (deleting() || imageOrPdf(10));
+    }
+    // Admins may browse (get/list), upload images and delete anywhere (media library, CMS folders such as
+    // brands/, categories/, banners/*, blogs/, coupons/, countries/, campaigns/, seo/, delivery/, sellers/).
+    match /{allPaths=**} {
+      allow read, delete: if isAdmin();
+      allow create, update: if isAdmin() && image(10);
+    }
+    // Translation bundles uploaded by the admin panel (JSON), readable by every client.
+    match /i18n/{path=**} {
+      allow read: if true;
+      allow create, update: if isAdmin() && request.resource.size < 2 * 1024 * 1024 && request.resource.contentType == 'application/json';
+    }
+    // Seller panel uploads store logo/banner into shared folders: sellers may only CREATE new objects there
+    // (no overwrite/delete of other stores' files; names are timestamped by the client).
+    match /sellers/logo/{file} {
+      allow read: if true;
+      allow create: if role() == 'seller' && image(5);
+    }
+    match /sellers/banner/{file} {
+      allow read: if true;
+      allow create: if role() == 'seller' && image(5);
+    }
+    // Partner app: rider photo (deliveryPartners/{uid}/...) and KYC docs (deliveryPartners/{uid}/docs/...).
+    match /deliveryPartners/{uid}/{file} {
+      allow read: if signedIn();
+      allow write: if isOwner(uid) && (deleting() || image(5));
+    }
+    match /deliveryPartners/{uid}/docs/{path=**} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if isOwner(uid) && (deleting() || imageOrPdf(10));
+    }
+    // Everything else is closed (backups/ is written by the managed export service account).
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

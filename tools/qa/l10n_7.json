@@ -1,0 +1,1 @@
+[{"goto":"http://localhost:8082/login","ms":8000},{"shot":"seller_login_en"},{"click":[1160,649],"ms":1500},{"click":[1047,365],"ms":500},{"type":"9876543210"},{"click":[1047,428],"ms":10000},{"shot":"seller_phone_sent"}]

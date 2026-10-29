@@ -1,0 +1,77 @@
+{
+  "name": "Go4Market: groceries, pharmacy, food and more",
+  "short_name": "Go4Market",
+  "description": "Groceries, medicines, meals and everyday essentials from trusted local sellers, delivered fast.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F7FAF8",
+  "theme_color": "#0B8A4F",
+  "orientation": "any",
+  "lang": "en-IN",
+  "categories": [
+    "shopping",
+    "food",
+    "lifestyle"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Search",
+      "url": "/search",
+      "icons": [
+        {
+          "src": "/icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "My orders",
+      "url": "/orders",
+      "icons": [
+        {
+          "src": "/icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "url": "/cart",
+      "icons": [
+        {
+          "src": "/icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "projects": { "default": "go4market" },
+  "targets": {
+    "go4market": {
+      "hosting": {
+        "website": ["go4market"],
+        "admin": ["go4market-admin"],
+        "seller": ["go4market-seller"],
+        "delivery": ["go4market-delivery"]
+      }
+    }
+  }
+}

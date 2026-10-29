@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://go4market.web.app/sitemap.xml
