@@ -46,7 +46,7 @@ class _DeliveryShellState extends State<DeliveryShell> {
       if (granted && await Geolocator.isLocationServiceEnabled()) {
         await LocationService.instance.start(myUid);
       } else {
-        await LocationService.instance.stop();
+        await LocationService.instance.stop(uid: myUid);
       }
     } catch (_) {}
   }

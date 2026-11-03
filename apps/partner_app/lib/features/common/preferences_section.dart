@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/app_state.dart';
 import '../../core/l10n.dart';
@@ -51,6 +52,17 @@ class PreferencesSection extends StatelessWidget {
               title: context.s.helpFaq,
               onTap: () => Go.push(context, const HelpScreen()),
             ),
+            // Required by Play policy: privacy policy and account deletion reachable in-app.
+            MenuTile(
+              icon: Icons.privacy_tip_outlined,
+              title: context.tr('Privacy policy', 'गोपनीयता नीति'),
+              onTap: () => _openPage('privacy'),
+            ),
+            MenuTile(
+              icon: Icons.person_remove_outlined,
+              title: context.tr('Delete account', 'खाता हटाएं'),
+              onTap: () => _openPage('delete-account'),
+            ),
           ]),
         ),
         const SizedBox(height: 16),
@@ -87,6 +99,9 @@ class PreferencesSection extends StatelessWidget {
       ]),
     );
   }
+
+  Future<void> _openPage(String slug) =>
+      launchUrl(Uri.parse('https://go4market.web.app/page/$slug'), mode: LaunchMode.externalApplication);
 
   void _pickLanguage(BuildContext context) {
     showModalBottomSheet<void>(

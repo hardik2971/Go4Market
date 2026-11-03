@@ -42,7 +42,7 @@ class _DeliveryHomeTabState extends State<DeliveryHomeTab> {
         if (!ok) return;
       }
       setState(() => _busy = true);
-      await LocationService.instance.stop();
+      await LocationService.instance.stop(uid: myUid);
     } else {
       final ok = await LocationService.instance.ensurePermission(context);
       if (!ok || !mounted) return;

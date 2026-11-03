@@ -12,3 +12,6 @@ key.properties
 *.log
 tools/qa/out/
 tools/qa/node_modules/
+
+# Release bundles copied for Play Console upload
+playstore/**/*.aab

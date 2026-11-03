@@ -44,7 +44,8 @@ class _SiteShellState extends State<SiteShell> {
     super.initState();
     if (WebBridge.session('g4m_popup_seen') == null) {
       _popupSub = live('popups', Data.webPopups).listen((l) {
-        if (l.isEmpty || !mounted || WebBridge.session('g4m_popup_seen') != null) return;
+        // Legal pages (privacy, terms, delete-account) are opened from app stores and emails; keep them clear.
+        if (l.isEmpty || !mounted || WebBridge.session('g4m_popup_seen') != null || Uri.base.path.startsWith('/page/')) return;
         WebBridge.setSession('g4m_popup_seen', '1');
         _popupSub?.cancel();
         Future.delayed(const Duration(milliseconds: 1600), () {

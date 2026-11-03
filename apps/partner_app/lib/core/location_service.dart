@@ -192,12 +192,14 @@ class LocationService extends ChangeNotifier {
   }
 
   /// Stops streaming and (by default) marks the partner offline.
-  Future<void> stop({bool writeOffline = true}) async {
+  /// [uid] lets callers clear a stale `online` flag left by an earlier session,
+  /// when no stream (and so no [_uid]) exists in this one.
+  Future<void> stop({bool writeOffline = true, String? uid}) async {
     await _sub?.cancel();
     _sub = null;
     _heartbeat?.cancel();
     _heartbeat = null;
-    final uid = _uid;
+    uid = _uid ?? uid;
     if (writeOffline && uid != null) {
       try {
         await Fs.deliveryPartners.doc(uid).update({'online': false, 'locationUpdatedAt': Fs.now});

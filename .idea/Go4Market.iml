@@ -15,6 +15,9 @@
       <excludeFolder url="file://$MODULE_DIR$/apps/website/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/apps/website/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/apps/website/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/g4m_core/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/g4m_core/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/g4m_core/build" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

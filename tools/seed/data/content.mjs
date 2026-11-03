@@ -357,33 +357,116 @@ Questions? Write to support@go4market.com.
   privacy: P('Privacy Policy', `
 # Privacy Policy
 
-_Last updated: October 2026_
+_Last updated: November 2026_
 
-This policy explains what personal data Go4Market collects, why, and the choices you have. It is written to comply with India’s Digital Personal Data Protection Act, 2023.
+This policy explains what personal data Go4Market collects, why, who we share it with, and the choices you have. It applies to the **Go4Market** customer app (com.go4market.customer), the **Go4Market Partner** app for sellers and delivery partners (com.go4market.partner), and the website go4market.web.app. It is written to comply with India’s Digital Personal Data Protection Act, 2023 and the Google Play User Data policy.
 
 ## Data we collect
-- **Account:** name, email, phone number and password (stored securely by Firebase Authentication).
-- **Orders:** delivery addresses, items, payment status and order history.
-- **Location:** your delivery location, and — for delivery partners — live location while online.
-- **Device:** app version, device type and a notification token to send you order updates.
+- **Account:** name, email address, phone number and password, or your Google sign-in. Passwords are stored securely by Firebase Authentication and never seen by us.
+- **Location:** approximate and precise device location (GPS). See [Location data](#location-data) below for exactly when and why.
+- **Orders:** delivery addresses, items ordered, payment status, order history, reviews and return requests.
+- **Photos and files:** photos you choose to upload, such as product images, store logos, profile photos and review photos. Sellers and delivery partners also upload KYC documents (for example PAN, Aadhaar, GSTIN, driving licence and vehicle details).
+- **Financial information:** for sellers and delivery partners, bank account number, IFSC or UPI ID for payouts, plus earnings, payouts and cash-on-delivery records. Customers’ card details are entered with Razorpay, Stripe or PayPal and are never stored by us.
+- **Device:** app version, device type and a push notification token so we can send order updates.
+- **Camera and microphone:** the Partner app uses the camera only to scan product barcodes and take photos you choose to upload. The customer app uses the microphone only while you use voice search. Barcode images and voice audio are processed on your device and are not stored by us.
 
-## How we use it
-To process and deliver orders, provide support, prevent fraud, send transactional messages, and — only with your consent — send offers. We do not sell your personal data.
+## Location data
+**Customer app (Go4Market).** With your permission, the app reads your precise location while you are using it to find stores and products that deliver to you, set or confirm your delivery address on the map, and estimate delivery times. The customer app does **not** access your location in the background. Your saved delivery address is shared with the store and the delivery partner for your order.
+
+**Partner app (Go4Market Partner), sellers.** We use the location pin you set for your store so customers and delivery partners can find it. The app reads your device location only when you choose to set that pin.
+
+**Partner app (Go4Market Partner), delivery partners.** When you tap **Go online**, the app collects your **precise location, including in the background** (while the app is closed, minimised or the screen is off), every few seconds until you tap **Go offline** or log out. We use it to:
+- show customers their delivery partner’s live position and arrival time for an active order;
+- assign nearby delivery requests to the closest available delivery partner;
+- show you the route to the store and the customer;
+- confirm pickups and deliveries and resolve disputes, fraud and safety issues.
+
+While location is being collected, Android shows a persistent **“You are online”** notification. We do not collect your location while you are offline, and location is never used for advertising. Before the app asks for location permission, it explains this on screen and asks for your agreement. You can stop location collection at any time by going offline, or by turning off location permission for the app in your phone’s settings; you will then not receive delivery requests.
+
+**Who sees location data:** the customer of an active order (the delivery partner’s live position, only during that delivery), the store fulfilling the order, and Go4Market administrators for support and safety. We do not sell location data or share it with advertisers or data brokers.
+
+**How long we keep it:** we do not store a route history. We keep only the delivery partner’s **latest** position, which is overwritten with each update: on the partner’s profile, and on the order they are delivering so the customer can track it. After a delivery, the last recorded position stays with that order record, which is kept as described under Retention. When a delivery partner deletes their account, the position on their profile is deleted.
+
+## How we use your data
+To create and secure your account, process and deliver orders, show live order tracking, pay sellers and delivery partners, verify partners (KYC), provide customer support, prevent fraud and abuse, comply with law, send order updates and, only with your consent, send offers. We do not sell your personal data and we do not use it for third-party advertising.
 
 ## Sharing
-We share only what is needed: the store receives your order and name; the rider receives your name, phone and address for delivery; payment processors receive payment details. Card data is handled by Razorpay, Stripe or PayPal and never stored by us.
+We share only what is needed for each order:
+- the **store** receives your name, order and delivery address;
+- the **delivery partner** receives your name, phone number and delivery address;
+- the **customer** sees the delivery partner’s name, phone number (masked where available) and live location during the delivery;
+- **payment processors** (Razorpay, Stripe, PayPal) receive payment details to complete payments and refunds;
+- **service providers** that run the platform for us under contract: Google Firebase and Google Cloud (hosting, database, sign-in, notifications) and Google Maps (maps and navigation);
+- **authorities**, when required by law.
 
 ## Retention
-We keep order records for as long as required by tax law (currently eight years). You may delete your account at any time; we then erase or anonymise data we are not required to keep.
+We keep account data while your account is active. Order, invoice, payment and payout records are kept for eight years as required by Indian tax law. KYC documents are kept while you are a partner and for up to two years after, unless the law requires longer. When you delete your account, we erase or anonymise everything we are not required to keep.
 
-## Your rights
-You can access, correct or erase your data and withdraw consent for marketing in the app or by writing to privacy@go4market.com.
+## Your rights and choices
+You can access, correct or erase your data, withdraw consent for marketing, turn off notifications, and revoke location, camera or microphone permission in your phone’s settings at any time. To delete your account, follow the steps on our [Delete account](/page/delete-account) page or use **Delete account** in the app. For any request, write to privacy@go4market.com.
 
 ## Security
-Data is encrypted in transit and at rest on Google Cloud infrastructure in India. Access is restricted by role.
+Data is encrypted in transit (HTTPS/TLS) and at rest on Google Cloud infrastructure in India. Access is restricted by role and logged.
+
+## Children
+Go4Market is not intended for children under 18. Delivery partners and sellers must be at least 18.
+
+## Changes
+We will update the date above and notify you in the app when we make material changes to this policy.
 
 ## Contact
-Grievance Officer, Go4Market, Ahmedabad, Gujarat, India · privacy@go4market.com
+Grievance Officer, Go4Market, Ahmedabad, Gujarat, India · privacy@go4market.com · support@go4market.com
+`),
+  'delete-account': P('Delete Your Account', `
+# Delete your Go4Market account
+
+_Last updated: November 2026_
+
+This page explains how to delete your **Go4Market** account and the data linked to it. It applies to the **Go4Market** customer app, the **Go4Market Partner** app (sellers and delivery partners) and the website go4market.web.app, which all share one account. The apps are published on Google Play by **GLOBETRADINGS**. Account deletion is free and you can ask for it at any time.
+
+You can sign in to Go4Market with **email and password**, **phone number with a one-time code (OTP)** or **Google**. Whichever method you used, the steps below delete the same account.
+
+## How to request deletion
+In the **Go4Market Partner** app you can open this page from **Settings → Delete account** (under Profile for delivery partners, under More for sellers).
+
+1. Email **privacy@go4market.com** from the email address on your account, or include the **phone number** you sign in with.
+2. Use the subject **"Delete my Go4Market account"**.
+3. Tell us which app you use (Go4Market or Go4Market Partner). Adding your name helps us find the account faster.
+4. We confirm your identity: we reply to your email or send a one-time code to your registered phone number. We never ask for your password.
+5. After verification, we delete your account within **30 days** and email you a confirmation.
+
+> Before you ask for deletion, please finish or cancel any open orders, spend or withdraw your wallet balance, and settle any cash collected as a delivery partner. Wallet balance, unused referral rewards and active membership benefits are **lost** when the account is deleted and cannot be restored.
+
+## What we delete
+- Your profile: name, email, phone number and profile photo
+- Your sign-in account (email/password, phone or Google login)
+- Saved delivery addresses and location data
+- Cart, wishlist, recently viewed items and product subscriptions
+- Notification tokens, in-app notifications and marketing preferences
+- Wallet balance, referral code and membership
+- For sellers: store profile, product listings, logo and banner images
+- For delivery partners: profile, vehicle details and last known location
+
+## What we keep, and for how long
+Some records must be kept by law or to prevent fraud. We keep them only as long as needed, and remove your name and contact details from them where we can.
+
+| Data | Why we keep it | How long |
+|---|---|---|
+| Order and invoice records | Tax and accounting law in India | 8 years |
+| Payment and refund records | Financial regulations and dispute resolution | 8 years |
+| Seller payouts and delivery cash collections | Accounting and settlement | 8 years |
+| KYC documents (PAN, Aadhaar, GSTIN, licence) of sellers and delivery partners | Legal and anti-fraud obligations | Up to 2 years after the account is closed |
+| Records of fraud or abuse | Preventing fraud and protecting users | Up to 2 years |
+
+Backups are overwritten in the normal backup cycle, within **35 days**. Card details are never stored by Go4Market; they are handled by Razorpay, Stripe or PayPal under their own policies.
+
+## Delete some data without deleting your account
+You can remove individual data at any time from the app or website: edit or delete saved addresses, clear your cart and wishlist, cancel subscriptions, and turn off notifications. To ask for a copy or correction of your data, or to delete only specific data, email **privacy@go4market.com**.
+
+## Contact
+Grievance Officer, Go4Market, Ahmedabad, Gujarat, India · privacy@go4market.com · support@go4market.com
+
+Read more in our [Privacy Policy](/page/privacy).
 `),
   refund: P('Refund Policy', `
 # Refund Policy
